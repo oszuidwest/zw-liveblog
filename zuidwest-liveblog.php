@@ -3,13 +3,13 @@
 /**
  * Plugin Name: ZuidWest Liveblog
  * Description: Replaces the [liveblog id="123456"] shortcode with 24LiveBlog embed code and hides advertisements.
- * Version: 1.1
+ * Version: 1.3
  * Author: Streekomroep ZuidWest
  * License: MIT
  */
 
 // Prevent direct file access
-if (! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 }
 
@@ -21,6 +21,9 @@ if (! defined('ABSPATH')) {
  */
 function zw_liveblog_shortcode($atts)
 {
+    global $zw_liveblog_present;
+    $zw_liveblog_present = true; // Mark that the shortcode is used
+
     // Parse shortcode attributes
     $atts = shortcode_atts(
         array(
@@ -37,45 +40,23 @@ function zw_liveblog_shortcode($atts)
         return '';
     }
 
-    // Enqueue the necessary script
-    wp_enqueue_script('24liveblog-js', 'https://v.24liveblog.com/24.js', array(), null, true);
-
-    // Indicate that the shortcode is present (used for conditional CSS loading)
-    global $zw_liveblog_present;
-    $zw_liveblog_present = true;
-
     // Build and return the embed code
-    $output = '<div id="LB24_LIVE_CONTENT" data-eid="' . esc_attr($liveblog_id) . '"></div>';
-
-    return $output;
+    return '<div id="LB24_LIVE_CONTENT" data-eid="' . esc_attr($liveblog_id) . '"></div>';
 }
 add_shortcode('liveblog', 'zw_liveblog_shortcode');
 
 /**
- * Conditionally enqueue CSS only if the liveblog shortcode is used in the content.
- */
-function zw_liveblog_maybe_enqueue_assets($content)
-{
-    global $zw_liveblog_present;
-
-    // Check if the content contains the [liveblog] shortcode
-    if (has_shortcode($content, 'liveblog')) {
-        $zw_liveblog_present = true;
-    }
-
-    return $content;
-}
-add_filter('the_content', 'zw_liveblog_maybe_enqueue_assets');
-
-/**
- * Register and enqueue custom CSS if the liveblog shortcode is detected.
+ * Conditionally enqueue CSS and JavaScript if the liveblog shortcode is detected.
  */
 function zw_liveblog_enqueue_assets()
 {
     global $zw_liveblog_present;
 
-    if ($zw_liveblog_present) {
-        // Register and enqueue custom CSS
+    if (!empty($zw_liveblog_present)) {
+        // Enqueue JavaScript
+        wp_enqueue_script('24liveblog-js', 'https://v.24liveblog.com/24.js', array(), null, true);
+
+        // Enqueue custom CSS
         wp_register_style('zw-liveblog-style', false);
         wp_enqueue_style('zw-liveblog-style');
 
