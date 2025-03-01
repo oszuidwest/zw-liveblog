@@ -1,41 +1,33 @@
 <?php
-
-/**
- * Plugin Name: ZuidWest Liveblog
- * Description: Replaces the [liveblog id="123456"] shortcode with 24LiveBlog embed code and hides advertisements.
- * Version: 1.3
- * Author: Streekomroep ZuidWest
- * License: MIT
- */
+/*
+Plugin Name: ZuidWest Liveblog
+Description: Replaces the [liveblog id="123456"] shortcode with the 24LiveBlog embed code and hides advertisements.
+Version: 1.4
+Author: Streekomroep ZuidWest
+License: MIT
+*/
 
 // Prevent direct file access
-if (!defined('ABSPATH')) {
+if (! defined('ABSPATH')) {
     exit;
 }
 
 /**
  * Shortcode handler for [liveblog id="123456"].
  *
- * Usage in post/page:
+ * Usage in a post or page:
  * [liveblog id="YOUR_LIVEBLOG_ID"]
  */
 function zw_liveblog_shortcode($atts)
 {
-    global $zw_liveblog_present;
-    $zw_liveblog_present = true; // Mark that the shortcode is used
-
     // Parse shortcode attributes
-    $atts = shortcode_atts(
-        array(
-            'id' => '',
-        ),
-        $atts,
-        'liveblog'
-    );
+    $atts = shortcode_atts(array(
+        'id' => '',
+    ), $atts, 'liveblog');
 
     $liveblog_id = sanitize_text_field($atts['id']);
 
-    // If no ID is provided, return empty string
+    // If no ID is provided, return an empty string
     if (empty($liveblog_id)) {
         return '';
     }
@@ -46,32 +38,29 @@ function zw_liveblog_shortcode($atts)
 add_shortcode('liveblog', 'zw_liveblog_shortcode');
 
 /**
- * Conditionally enqueue CSS and JavaScript if the liveblog shortcode is detected.
+ * Enqueue CSS and JavaScript assets if the liveblog shortcode is present in the post.
  */
 function zw_liveblog_enqueue_assets()
 {
-    global $zw_liveblog_present;
+    // Check if it's a singular post and the content contains the liveblog shortcode
+    if (is_singular() && has_shortcode(get_post()->post_content, 'liveblog')) {
+        // Enqueue the 24LiveBlog script
+        wp_enqueue_script('liveblog-24-js', 'https://v.24liveblog.com/24.js', array(), null, true);
 
-    if (!empty($zw_liveblog_present)) {
-        // Enqueue JavaScript
-        wp_enqueue_script('24liveblog-js', 'https://v.24liveblog.com/24.js', array(), null, true);
-
-        // Enqueue custom CSS
+        // Register and enqueue custom CSS
         wp_register_style('zw-liveblog-style', false);
         wp_enqueue_style('zw-liveblog-style');
 
-        // Add inline CSS
         $custom_css = '
-        /* Hide advertisements in the liveblog */
-        .lb24-news-list-item.lb24-base-list-ad {
-            display: none !important;
-        }
-        /* Translucent background on hover for news containers */
-        #LB24 .lb24-theme-dark .lb24-base-news-container:hover {
-            background: #0000002b !important;
-        }
+            /* Hide advertisements in the liveblog */
+            .lb24-news-list-item.lb24-base-list-ad {
+                display: none !important;
+            }
+            /* Translucent background on hover for news containers */
+            #LB24 .lb24-theme-dark .lb24-base-news-container:hover {
+                background: #0000002b !important;
+            }
         ';
-
         wp_add_inline_style('zw-liveblog-style', $custom_css);
     }
 }
