@@ -1,13 +1,20 @@
 # ZuidWest Liveblog
 
-This WordPress plugin is designed to embed 24LiveBlog liveblog posts into a website. It replaces the shortcode `[liveblog id="123456"]` with the appropriate 24LiveBlog embed code.
+A lightweight WordPress plugin that embeds 24LiveBlog posts using the `[liveblog id="YOUR_LIVEBLOG_ID"]` shortcode. It replaces the shortcode with the proper embed code, hides ads, and adds basic dark mode styling.
 
-The plugin also contains some ugly CSS hacks. It automatically hides advertisements within the liveblog by not displaying the associated div and adds styling for dark mode.
+## Installation
 
-## Usage
+1. Upload the plugin folder to your `/wp-content/plugins/` directory.
+2. Activate the plugin from your WordPress dashboard.
+3. Insert the shortcode `[liveblog id="YOUR_LIVEBLOG_ID"]` into any post or page.
 
-After activating the plugin, you can embed a liveblog into any post or page by using the following shortcode:
+## Features
 
-```html
-[liveblog id="YOUR_LIVEBLOG_ID"]
-```
+- **Liveblog Embedding:** Automatically converts the shortcode into a 24LiveBlog embed.
+- **Ad Hiding:** Removes ad elements that get inserted in the free version.
+- **Dark Mode Support:** Provides basic styling adjustments for dark mode.
+- **SEO-Friendly:** Injects JSON-LD schema markup for better search engine visibility.
+
+## License
+
+MIT
