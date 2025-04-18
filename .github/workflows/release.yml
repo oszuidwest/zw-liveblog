@@ -12,7 +12,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
+          
+      - name: Set Plugin Name
+        run: |
+          PLUGIN_NAME="zuidwest-liveblog"
+          echo "PLUGIN_NAME=$PLUGIN_NAME" >> $GITHUB_ENV
+          
       - name: Parse version number from plugin file
         id: get_version
         run: |
@@ -74,14 +79,13 @@ jobs:
         if: env.RELEASE_NEEDED == 'true'
         run: |
           cd release
-          zip -r ../zuidwest-liveblog-${{ env.VERSION }}.zip ./*
+          zip -r "../${{ env.PLUGIN_NAME }}.zip" ./*
           cd ..
-          ls -la zuidwest-liveblog-${{ env.VERSION }}.zip
-
+          ls -la "${{ env.PLUGIN_NAME }}.zip"
       - name: Create GitHub Release and upload zip
         if: env.RELEASE_NEEDED == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Creating GitHub release and uploading zip package..."
-          gh release create ${{ env.VERSION }} zuidwest-liveblog-${{ env.VERSION }}.zip --title "${{ env.VERSION }}" --notes "Automated release for version ${{ env.VERSION }}"
+          gh release create ${{ env.VERSION }} "${{ env.PLUGIN_NAME }}.zip" --title "${{ env.VERSION }}" --notes "Automated release for version ${{ env.VERSION }}"
