@@ -2,7 +2,7 @@
 /*
 Plugin Name: ZuidWest Liveblog
 Description: Replaces the [liveblog id="123456"] shortcode with the 24LiveBlog embed code, hides advertisements, and adds LiveBlogPosting schema.
-Version: 1.6
+Version: 1.6.1
 Author: Streekomroep ZuidWest
 License: MIT
 */
@@ -98,9 +98,16 @@ function zw_liveblog_fetch_event_meta($event_id)
  */
 function zw_liveblog_format_wp_datetime($timestamp)
 {
-    $dt = new DateTime('@' . $timestamp);
-    $dt->setTimezone(wp_timezone());
-    return $dt->format(DATE_W3C);
+    if (empty($timestamp) || !is_numeric($timestamp) || $timestamp <= 0) {
+        return '';
+    }
+    try {
+        $dt = new DateTime('@' . $timestamp);
+        $dt->setTimezone(wp_timezone());
+        return $dt->format(DATE_W3C);
+    } catch (Exception $e) {
+        return '';
+    }
 }
 
 /**
@@ -130,25 +137,39 @@ function zw_liveblog_add_schema_to_head()
     $author_name = get_the_author_meta('display_name', (int) $post->post_author);
     $logo_id = get_theme_mod('custom_logo');
     $logo_url = $logo_id ? wp_get_attachment_image_url($logo_id, 'full') : '';
+    // Get coverage start time - use post time if published, otherwise current time
     $coverage_start = get_post_time('U', true, $post);
+    if (empty($coverage_start)) {
+        // For drafts/previews, try to get start_time from first liveblog event
+        // Otherwise use current time
+        $coverage_start = time();
+        foreach ($ids as $id) {
+            $meta = zw_liveblog_fetch_event_meta($id);
+            if ($meta && !empty($meta['start_time'])) {
+                $coverage_start = $meta['start_time'];
+                break;
+            }
+        }
+    }
     $coverage_start_iso = zw_liveblog_format_wp_datetime($coverage_start);
-    $modified_iso = zw_liveblog_format_wp_datetime(get_post_modified_time('U', true, $post));
+    $modified_time = get_post_modified_time('U', true, $post);
+    $modified_iso = zw_liveblog_format_wp_datetime($modified_time ?: time());
 
     $schema = [
         '@context' => 'https://schema.org',
         '@type' => 'LiveBlogPosting',
         'mainEntityOfPage' => get_permalink($post),
-        'headline' => get_the_title($post),
+        'headline' => html_entity_decode(get_the_title($post), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
         'datePublished' => $coverage_start_iso,
         'dateModified' => $modified_iso,
         'coverageStartTime' => $coverage_start_iso,
         'author' => [
             '@type' => 'Person',
-            'name' => $author_name,
+            'name' => html_entity_decode($author_name, ENT_QUOTES | ENT_HTML5, 'UTF-8'),
         ],
         'publisher' => [
             '@type' => 'Organization',
-            'name' => get_bloginfo('name'),
+            'name' => html_entity_decode(get_bloginfo('name'), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
             'logo' => [
                 '@type' => 'ImageObject',
                 'url' => $logo_url,
@@ -165,10 +186,16 @@ function zw_liveblog_add_schema_to_head()
                 continue;
             }
 
+            $created_timestamp = $update['created'] ?? 0;
+            $date_published = zw_liveblog_format_wp_datetime($created_timestamp);
+            if (empty($date_published)) {
+                continue;
+            }
+
             $update_item = [
                 '@type' => 'BlogPosting',
                 'articleBody' => $text,
-                'datePublished' => zw_liveblog_format_wp_datetime($update['created']),
+                'datePublished' => $date_published,
                 'url' => get_permalink($post) . '#liveblog-' . esc_attr($update['nid']),
             ];
 
@@ -183,7 +210,10 @@ function zw_liveblog_add_schema_to_head()
         // Include coverageEndTime if event is closed.
         $meta = zw_liveblog_fetch_event_meta($id);
         if ($meta && !empty($meta['closed']) && !empty($meta['last_updated'])) {
-            $schema['coverageEndTime'] = zw_liveblog_format_wp_datetime($meta['last_updated']);
+            $coverage_end = zw_liveblog_format_wp_datetime($meta['last_updated']);
+            if (!empty($coverage_end)) {
+                $schema['coverageEndTime'] = $coverage_end;
+            }
         }
     }
 
