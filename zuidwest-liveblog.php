@@ -2,7 +2,7 @@
 /*
 Plugin Name: ZuidWest Liveblog
 Description: Replaces the [liveblog id="123456"] shortcode with the 24LiveBlog embed code, hides advertisements, and adds LiveBlogPosting schema.
-Version: 1.6.1
+Version: 1.7
 Author: Streekomroep ZuidWest
 License: MIT
 Requires at least: 6.8
@@ -13,7 +13,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('ZW_LIVEBLOG_VERSION', '1.6.1');
+define('ZW_LIVEBLOG_VERSION', get_file_data(__FILE__, ['Version' => 'Version'])['Version']);
 
 register_activation_hook(__FILE__, function (): void {
     // Placeholder for future activation tasks
