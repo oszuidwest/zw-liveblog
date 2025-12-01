@@ -5,12 +5,30 @@ Description: Replaces the [liveblog id="123456"] shortcode with the 24LiveBlog e
 Version: 1.6.1
 Author: Streekomroep ZuidWest
 License: MIT
+Requires at least: 6.8
 Requires PHP: 8.3
 */
 
 if (!defined('ABSPATH')) {
     exit;
 }
+
+define('ZW_LIVEBLOG_VERSION', '1.6.1');
+
+register_activation_hook(__FILE__, function (): void {
+    // Placeholder for future activation tasks
+});
+
+register_deactivation_hook(__FILE__, function (): void {
+    global $wpdb;
+    $wpdb->query(
+        $wpdb->prepare(
+            'DELETE FROM ' . $wpdb->options . ' WHERE option_name LIKE %s OR option_name LIKE %s',
+            '_transient_zw_liveblog_%',
+            '_transient_timeout_zw_liveblog_%'
+        )
+    );
+});
 
 /**
  * Shortcode handler.
@@ -33,8 +51,12 @@ function zw_liveblog_enqueue_assets(): void
 {
     $post = get_post();
     if (is_singular() && $post && has_shortcode($post->post_content, 'liveblog')) {
-        wp_enqueue_script('liveblog-24-js', 'https://v.24liveblog.com/24.js', [], null, true);
-        wp_register_style('zw-liveblog-style', false);
+        // phpcs:ignore WordPress.WP.EnqueuedResourceParameters.NoExplicitVersion -- External script, version not controlled by us
+        wp_enqueue_script('liveblog-24-js', 'https://v.24liveblog.com/24.js', [], false, [
+            'in_footer' => true,
+            'strategy' => 'defer'
+        ]);
+        wp_register_style('zw-liveblog-style', false, [], ZW_LIVEBLOG_VERSION);
         wp_enqueue_style('zw-liveblog-style');
         $css = '
             .lb24-news-list-item.lb24-base-list-ad { display: none !important; }
@@ -59,7 +81,7 @@ function zw_liveblog_fetch_updates(string $event_id): array
     }
 
     $url = 'https://data.24liveplus.com/v1/retrieve_server/x/event/' . $event_id . '/news/?inverted_order=1&last_nid=&limit=100';
-    $response = wp_remote_get($url);
+    $response = wp_remote_get($url, ['timeout' => 5]);
     if (is_wp_error($response)) {
         return [];
     }
@@ -87,7 +109,7 @@ function zw_liveblog_fetch_event_meta(string $event_id): ?array
     }
 
     $url = 'https://data.24liveplus.com/v1/retrieve_server/x/event/' . $event_id . '/';
-    $response = wp_remote_get($url);
+    $response = wp_remote_get($url, ['timeout' => 5]);
     if (is_wp_error($response)) {
         return null;
     }
