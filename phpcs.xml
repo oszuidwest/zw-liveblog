@@ -27,7 +27,10 @@
     <!-- WordPress -->
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
-            <property name="prefixes" type="array" value="zw_liveblog_,ZW_LIVEBLOG_"/>
+            <property name="prefixes" type="array">
+                <element value="zw_liveblog_"/>
+                <element value="ZW_LIVEBLOG_"/>
+            </property>
         </properties>
     </rule>
     <rule ref="Generic.CodeAnalysis.EmptyPHPStatement"/>
