@@ -90,4 +90,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Creating GitHub release and uploading zip package..."
-          gh release create ${{ env.VERSION }} "${{ env.PLUGIN_NAME }}.zip" --title "${{ env.VERSION }}" --notes "Automated release for version ${{ env.VERSION }}"
+          gh release create ${{ env.VERSION }} "${{ env.PLUGIN_NAME }}.zip" --title "${{ env.VERSION }}" --generate-notes
