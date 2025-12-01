@@ -1,6 +1,9 @@
 {
   "name": "oszuidwest/zw-liveblog",
   "type": "wordpress-plugin",
+  "require": {
+    "php": "^8.3"
+  },
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.70",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
