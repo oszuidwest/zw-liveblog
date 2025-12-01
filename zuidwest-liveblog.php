@@ -5,6 +5,7 @@ Description: Replaces the [liveblog id="123456"] shortcode with the 24LiveBlog e
 Version: 1.6.1
 Author: Streekomroep ZuidWest
 License: MIT
+Requires at least: 6.8
 Requires PHP: 8.3
 */
 
@@ -33,7 +34,10 @@ function zw_liveblog_enqueue_assets(): void
 {
     $post = get_post();
     if (is_singular() && $post && has_shortcode($post->post_content, 'liveblog')) {
-        wp_enqueue_script('liveblog-24-js', 'https://v.24liveblog.com/24.js', [], null, true);
+        wp_enqueue_script('liveblog-24-js', 'https://v.24liveblog.com/24.js', [], null, [
+            'in_footer' => true,
+            'strategy' => 'defer'
+        ]);
         wp_register_style('zw-liveblog-style', false);
         wp_enqueue_style('zw-liveblog-style');
         $css = '
@@ -59,7 +63,7 @@ function zw_liveblog_fetch_updates(string $event_id): array
     }
 
     $url = 'https://data.24liveplus.com/v1/retrieve_server/x/event/' . $event_id . '/news/?inverted_order=1&last_nid=&limit=100';
-    $response = wp_remote_get($url);
+    $response = wp_remote_get($url, ['timeout' => 5]);
     if (is_wp_error($response)) {
         return [];
     }
@@ -87,7 +91,7 @@ function zw_liveblog_fetch_event_meta(string $event_id): ?array
     }
 
     $url = 'https://data.24liveplus.com/v1/retrieve_server/x/event/' . $event_id . '/';
-    $response = wp_remote_get($url);
+    $response = wp_remote_get($url, ['timeout' => 5]);
     if (is_wp_error($response)) {
         return null;
     }

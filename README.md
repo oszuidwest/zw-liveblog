@@ -1,19 +1,43 @@
 # ZuidWest Liveblog
 
-A lightweight WordPress plugin that embeds 24LiveBlog posts using the `[liveblog id="YOUR_LIVEBLOG_ID"]` shortcode. It replaces the shortcode with the proper embed code, hides ads, and adds basic dark mode styling.
+A lightweight WordPress plugin that embeds 24LiveBlog posts using a simple shortcode.
+
+## Requirements
+
+- WordPress 6.8 or higher
+- PHP 8.3 or higher
 
 ## Installation
 
-1. Upload the plugin folder to your `/wp-content/plugins/` directory.
-2. Activate the plugin from your WordPress dashboard.
-3. Insert the shortcode `[liveblog id="YOUR_LIVEBLOG_ID"]` into any post or page.
+1. Download the latest release from [GitHub Releases](https://github.com/oszuidwest/zw-liveblog/releases)
+2. Upload the ZIP file via WordPress Admin → Plugins → Add New → Upload Plugin
+3. Activate the plugin
+4. Add the shortcode to any post or page:
+   ```
+   [liveblog id="YOUR_LIVEBLOG_ID"]
+   ```
+
+## Finding your Liveblog ID
+
+1. Log in to your 24LiveBlog dashboard
+2. Open your liveblog event
+3. Copy the numeric ID from the URL or embed code
 
 ## Features
 
-- **Liveblog Embedding:** Automatically converts the shortcode into a 24LiveBlog embed.
-- **Ad Hiding:** Removes ad elements that get inserted in the free version.
-- **Dark Mode Support:** Provides basic styling adjustments for dark mode.
-- **SEO-Friendly:** Injects JSON-LD schema markup for better search engine visibility.
+- **Liveblog Embedding** - Converts the shortcode into a 24LiveBlog embed
+- **Ad Hiding** - Removes ad elements from the free 24LiveBlog tier
+- **Dark Mode Support** - Basic styling adjustments for dark themes
+- **SEO Schema** - Injects LiveBlogPosting JSON-LD markup with up to 100 updates
+- **Performance Optimized** - Deferred script loading, 60-second API caching
+
+## Development
+
+```bash
+composer install
+vendor/bin/phpcs           # Code style (PSR-12 + WordPress)
+vendor/bin/phpstan analyse # Static analysis
+```
 
 ## License
 
