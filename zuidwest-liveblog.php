@@ -4,7 +4,9 @@ Plugin Name: ZuidWest Liveblog
 Description: Replaces the [liveblog id="123456"] shortcode with the 24LiveBlog embed code, hides advertisements, and adds LiveBlogPosting schema.
 Version: 1.7
 Author: Streekomroep ZuidWest
-License: MIT
+Author URI: https://www.zuidwesttv.nl
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Requires at least: 6.8
 Requires PHP: 8.3
 */
