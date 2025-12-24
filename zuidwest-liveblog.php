@@ -32,6 +32,8 @@ register_deactivation_hook(__FILE__, function (): void {
 
 /**
  * Shortcode handler.
+ *
+ * @param array<string, string|int>|string $atts
  */
 function zw_liveblog_shortcode(array|string $atts): string
 {
@@ -71,6 +73,8 @@ add_action('wp_enqueue_scripts', zw_liveblog_enqueue_assets(...));
 
 /**
  * Fetch the latest 100 updates (cached for 60s).
+ *
+ * @return array<int, array<string, mixed>>
  */
 function zw_liveblog_fetch_updates(string $event_id): array
 {
@@ -99,6 +103,8 @@ function zw_liveblog_fetch_updates(string $event_id): array
 
 /**
  * Fetch metadata (e.g., closed status, last_updated).
+ *
+ * @return array<string, mixed>|null
  */
 function zw_liveblog_fetch_event_meta(string $event_id): ?array
 {
@@ -144,6 +150,8 @@ function zw_liveblog_format_wp_datetime(mixed $timestamp): string
 
 /**
  * Extract all liveblog IDs from content.
+ *
+ * @return array<int, string>
  */
 function zw_liveblog_extract_liveblog_ids(string $content): array
 {
