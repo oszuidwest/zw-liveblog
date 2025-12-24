@@ -11,6 +11,10 @@
     <!-- Fix crash on PHP 8 -->
     <ini name="error_reporting" value="E_ALL &#38; ~E_DEPRECATED"/>
 
+    <!-- Minimum PHP and WordPress versions -->
+    <config name="testVersion" value="8.3-"/>
+    <config name="minimum_wp_version" value="6.4"/>
+
     <rule ref="Generic.Files.EndFileNewline"/>
 
     <rule ref="PSR12">
