@@ -6,7 +6,7 @@
     <!-- Ignore warnings, show progress of the run and show sniff names -->
     <arg value="nps"/>
 
-    <file>zuidwest-liveblog.php</file>
+    <file>zw-liveblog.php</file>
 
     <!-- Fix crash on PHP 8 -->
     <ini name="error_reporting" value="E_ALL &#38; ~E_DEPRECATED"/>
