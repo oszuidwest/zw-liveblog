@@ -1,34 +1,50 @@
 <?xml version="1.0"?>
-<ruleset>
+<ruleset name="oszuidwest WordPress plugin baseline">
+    <description>
+        Baseline coding standards for oszuidwest WordPress plugins.
+        Consumer phpcs.xml adds &lt;file/&gt;, &lt;config name="text_domain"/&gt;,
+        and a PrefixAllGlobals rule with the plugin's prefixes.
+    </description>
+
+    <!-- Scan only PHP files. Consumer overrides /file/ entries. -->
     <arg name="extensions" value="php"/>
     <arg name="colors"/>
-
-    <!-- Ignore warnings, show progress of the run and show sniff names -->
-    <arg value="nps"/>
+    <arg value="sp"/>
 
     <file>zw-liveblog.php</file>
+    <file>uninstall.php</file>
 
-    <!-- Fix crash on PHP 8 -->
-    <ini name="error_reporting" value="E_ALL &#38; ~E_DEPRECATED"/>
+    <!-- Stop PHP 8 from emitting deprecation warnings inside phpcs itself. -->
+    <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
 
-    <!-- Minimum PHP and WordPress versions -->
-    <config name="testVersion" value="8.3-"/>
-    <config name="minimum_wp_version" value="6.4"/>
+    <!-- Versions enforced across all oszuidwest plugins. -->
+    <config name="testVersion" value="8.3-8.4"/>
+    <config name="minimum_wp_version" value="6.8"/>
+    <config name="text_domain" value="zw-liveblog"/>
 
-    <rule ref="Generic.Files.EndFileNewline"/>
-
-    <rule ref="PSR12">
-        <exclude name="PSR1.Files.SideEffects.FoundWithSymbols"/>
-        <exclude name="PSR12.Files.FileHeader.SpacingAfterBlock"/>
-        <exclude name="Generic.Files.LineLength.TooLong"/>
-        <exclude name="PSR1.Methods.CamelCapsMethodName.NotCamelCaps"/>
+    <!--
+        WordPress-Extra is WordPress-Core plus best-practice sniffs.
+        WordPress-Docs adds docblock requirements.
+        PHPCompatibilityWP enforces the testVersion above.
+    -->
+    <rule ref="WordPress-Extra">
+        <!-- We use short array syntax. -->
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+    </rule>
+    <rule ref="WordPress-Docs">
+        <!-- PHPStan type aliases aren't real PHP types. -->
+        <exclude name="Squiz.Commenting.FunctionComment.IncorrectTypeHint"/>
     </rule>
     <rule ref="PHPCompatibilityWP"/>
-    <rule ref="Squiz.Strings.DoubleQuoteUsage">
 
+    <!-- Generous line limit; warning only. -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="160"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
     </rule>
 
-    <!-- WordPress -->
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
         <properties>
             <property name="prefixes" type="array">
@@ -37,19 +53,8 @@
             </property>
         </properties>
     </rule>
-    <rule ref="Generic.CodeAnalysis.EmptyPHPStatement"/>
-    <rule ref="WordPress.CodeAnalysis.EscapedNotTranslated"/>
-    <rule ref="WordPress.DB"/>
-    <rule ref="WordPress.DateTime"/>
-    <rule ref="WordPress.Security">
-        <exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped"/>
-    </rule>
-    <rule ref="WordPress.Utils.I18nTextDomainFixer"/>
-    <rule ref="WordPress.PHP">
-        <exclude name="WordPress.PHP.YodaConditions"/>
-        <exclude name="Universal.Operators.DisallowShortTernary"/>
-    </rule>
-    <rule ref="WordPress.WP">
-        <exclude name="WordPress.DateTime.RestrictedFunctions"/>
-    </rule>
+
+    <!-- Excluded from every consumer. -->
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>node_modules/*</exclude-pattern>
 </ruleset>
