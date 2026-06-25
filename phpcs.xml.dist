@@ -1,43 +1,44 @@
 <?xml version="1.0"?>
-<ruleset name="oszuidwest WordPress plugin baseline">
-    <description>
-        Baseline coding standards for oszuidwest WordPress plugins.
-        Consumer phpcs.xml adds &lt;file/&gt;, &lt;config name="text_domain"/&gt;,
-        and a PrefixAllGlobals rule with the plugin's prefixes.
-    </description>
+<ruleset name="zw-liveblog">
+    <description>WordPress Coding Standards for ZuidWest Liveblog.</description>
 
-    <!-- Scan only PHP files. Consumer overrides /file/ entries. -->
+    <!-- Files to scan -->
+    <file>zw-liveblog.php</file>
+    <file>includes</file>
+    <file>uninstall.php</file>
+
+    <!-- Tooling -->
     <arg name="extensions" value="php"/>
     <arg name="colors"/>
     <arg value="sp"/>
 
-    <file>zw-liveblog.php</file>
-    <file>uninstall.php</file>
-
-    <!-- Stop PHP 8 from emitting deprecation warnings inside phpcs itself. -->
     <ini name="error_reporting" value="E_ALL &amp; ~E_DEPRECATED"/>
 
-    <!-- Versions enforced across all oszuidwest plugins. -->
+    <!-- Versions -->
     <config name="testVersion" value="8.3-8.4"/>
     <config name="minimum_wp_version" value="6.8"/>
-    <config name="text_domain" value="zw-liveblog"/>
 
-    <!--
-        WordPress-Extra is WordPress-Core plus best-practice sniffs.
-        WordPress-Docs adds docblock requirements.
-        PHPCompatibilityWP enforces the testVersion above.
-    -->
+    <!-- Per-plugin -->
+    <config name="text_domain" value="zw-liveblog"/>
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="zw_liveblog_"/>
+                <element value="ZW_Liveblog_"/>
+                <element value="ZW_LIVEBLOG_"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Standards -->
     <rule ref="WordPress-Extra">
-        <!-- We use short array syntax. -->
         <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
     </rule>
     <rule ref="WordPress-Docs">
-        <!-- PHPStan type aliases aren't real PHP types. -->
         <exclude name="Squiz.Commenting.FunctionComment.IncorrectTypeHint"/>
     </rule>
     <rule ref="PHPCompatibilityWP"/>
 
-    <!-- Generous line limit; warning only. -->
     <rule ref="Generic.Files.LineLength">
         <properties>
             <property name="lineLimit" value="160"/>
@@ -45,16 +46,6 @@
         </properties>
     </rule>
 
-    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
-        <properties>
-            <property name="prefixes" type="array">
-                <element value="zw_liveblog_"/>
-                <element value="ZW_LIVEBLOG_"/>
-            </property>
-        </properties>
-    </rule>
-
-    <!-- Excluded from every consumer. -->
     <exclude-pattern>vendor/*</exclude-pattern>
     <exclude-pattern>node_modules/*</exclude-pattern>
 </ruleset>

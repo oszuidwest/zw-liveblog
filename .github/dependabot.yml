@@ -5,13 +5,19 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    groups:
-      all-dependencies:
-        patterns:
-          - "*"
+      time: "07:00"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "composer"]
+    rebase-strategy: "auto"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
+      time: "07:10"
+      timezone: "Europe/Amsterdam"
+    open-pull-requests-limit: 10
+    labels: ["dependencies", "github-actions"]
+    rebase-strategy: "auto"

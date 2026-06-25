@@ -1,0 +1,83 @@
+.lb24-news-list-item.lb24-base-list-ad {
+    display: none !important;
+}
+
+#LB24 .lb24-base-editor-inputting,
+#LB24 .lb24-liveblog-white-label {
+    display: none !important;
+}
+
+#LB24.zw-liveblog-editor-inputting .lb24-base-topbar-status {
+    white-space: nowrap;
+}
+
+.dark #LB24,
+.dark #LB24 .lb24-liveblog-container,
+.dark #LB24 .lb24-base-container,
+.dark #LB24 .lb24-base-main-content,
+.dark #LB24 .lb24-base-list,
+.dark #LB24 .lb24-base-list-news {
+    background: transparent !important;
+    color: #d1d5db !important;
+}
+
+.dark #LB24 .lb24-base-topbar-container,
+.dark #LB24 .lb24-base-topbar-status,
+.dark #LB24 .lb24-base-topbar-sort,
+.dark #LB24 .lb24-base-topbar-volume {
+    background: #e5e7eb !important;
+    border-color: #d1d5db !important;
+    color: #111827 !important;
+}
+
+.dark #LB24 .lb24-base-topbar-container *,
+.dark #LB24 .lb24-base-topbar-status *,
+.dark #LB24 .lb24-base-topbar-sort *,
+.dark #LB24 .lb24-base-topbar-volume * {
+    color: #111827 !important;
+    fill: #111827 !important;
+}
+
+.dark #LB24 .lb24-base-news-container,
+.dark #LB24 .lb24-theme-dark .lb24-base-news-container {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+    color: #d1d5db !important;
+}
+
+.dark #LB24 .lb24-base-news-container:hover {
+    background: #374151 !important;
+}
+
+.dark #LB24 .lb24-base-news-head,
+.dark #LB24 .lb24-list-item-highlight {
+    background: #1f2937 !important;
+    border-color: #374151 !important;
+}
+
+.dark #LB24 .lb24-base-news-title,
+.dark #LB24 .lb24-base-news-title-text {
+    color: #ffffff !important;
+}
+
+.dark #LB24 .lb24-base-news-content,
+.dark #LB24 .lb24-base-news-content p,
+.dark #LB24 .lb24-component-content {
+    color: #d1d5db !important;
+}
+
+.dark #LB24 .lb24-base-news-date {
+    background: #374151 !important;
+    border-color: #374151 !important;
+    color: #ffffff !important;
+}
+
+.dark #LB24 .lb24-list-item-line,
+.dark #LB24 .lb24-base-news-update {
+    border-color: #374151 !important;
+}
+
+.dark #LB24 .lb24-component-operation,
+.dark #LB24 .lb24-component-operation * {
+    color: #9ca3af !important;
+}
