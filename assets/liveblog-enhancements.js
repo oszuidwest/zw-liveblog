@@ -156,7 +156,7 @@ body,
         }
 
         if (style) {
-            style.textContent = commentThemeCss;
+            // Already injected; nothing touches our <head> style, so no rewrite.
             return;
         }
 
@@ -174,15 +174,23 @@ body,
 
         updateCommentFrameTheme(frame);
 
-        // The comment app renders .frame-content after load, and a parent-side
-        // observer cannot see inside the iframe. Observe the iframe's own
-        // document so the theme reapplies without polling. A fresh load swaps
-        // the document, so re-observe per document via a marker on <html>.
         const frameRoot = frameDocument.documentElement;
         if (frameRoot.dataset.zwLiveblogCommentThemeObserved === '1') {
             return;
         }
         frameRoot.dataset.zwLiveblogCommentThemeObserved = '1';
+
+        // The comment app renders .frame-content shortly after load, and a
+        // parent-side observer cannot see inside the iframe. If it is already
+        // there, the one-time injection above is all we need. Otherwise watch
+        // the iframe's own document ONLY until it appears, then disconnect: a
+        // live chat mutates 100+/s and the injected <head> style survives that
+        // churn, so a permanent observer would burn CPU for nothing. Theme
+        // toggles are handled by observeThemeChanges; a fresh load swaps the
+        // document and re-arms this via the iframe load listener.
+        if (frameDocument.querySelector('.frame-content')) {
+            return;
+        }
 
         let animationFrame = 0;
         const observer = new MutationObserver(() => {
@@ -193,6 +201,9 @@ body,
             animationFrame = window.requestAnimationFrame(() => {
                 animationFrame = 0;
                 updateCommentFrameTheme(frame);
+                if (frameDocument.querySelector('.frame-content')) {
+                    observer.disconnect();
+                }
             });
         });
         observer.observe(frameRoot, { childList: true, subtree: true });
