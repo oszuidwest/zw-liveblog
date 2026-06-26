@@ -20,6 +20,7 @@
         return;
     }
 
+    // Selectors/classes below mirror the current ZuidWest card markup.
     const postIdFor = (article) => {
         const postId = Number.parseInt(
             article.getAttribute('data-post-id') ||
@@ -47,8 +48,6 @@
             return null;
         }
 
-        row.style.alignItems = 'center';
-        row.style.flexWrap = 'wrap';
         return row;
     };
 
@@ -64,6 +63,9 @@
         if (!row) {
             return;
         }
+
+        row.style.alignItems = 'center';
+        row.style.flexWrap = 'wrap';
 
         const badge = document.createElement('span');
         badge.className =

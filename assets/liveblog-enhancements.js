@@ -3,11 +3,11 @@
     const inputtingLabel = settings.inputtingLabel || 'Aan het typen...';
     const recentlyUpdatedLabel =
         settings.recentlyUpdatedLabel || 'Net bijgewerkt';
+    // 24LiveBlog owns these class names; update selectors if their embed markup changes.
     const inputtingSelector = '.lb24-base-editor-inputting';
     const statusSelector = '.lb24-base-topbar-status';
     const updatingTextSelector = '.lb24-component-updating1';
     const statusTextSelector = '.lb24-base-topbar-status-text';
-    const whiteLabelSelector = '.lb24-liveblog-white-label';
     const commentThemeStyleId = 'zw-liveblog-comment-dark-theme';
     const commentThemeCss = `
 html,
@@ -69,12 +69,6 @@ body,
 
     const isDarkTheme = () =>
         document.documentElement.classList.contains('dark');
-
-    const removeWhiteLabels = (root) => {
-        root.querySelectorAll(whiteLabelSelector).forEach((label) => {
-            label.remove();
-        });
-    };
 
     const hasVisibleInputtingElement = (root) => {
         const inputting = root.querySelector(inputtingSelector);
@@ -172,18 +166,70 @@ body,
         frameDocument.head.appendChild(newStyle);
     };
 
+    const watchCommentFrame = (frame) => {
+        const frameDocument = getFrameDocument(frame);
+        if (!frameDocument?.documentElement) {
+            return;
+        }
+
+        updateCommentFrameTheme(frame);
+
+        // The comment app renders .frame-content after load, and a parent-side
+        // observer cannot see inside the iframe. Observe the iframe's own
+        // document so the theme reapplies without polling. A fresh load swaps
+        // the document, so re-observe per document via a marker on <html>.
+        const frameRoot = frameDocument.documentElement;
+        if (frameRoot.dataset.zwLiveblogCommentThemeObserved === '1') {
+            return;
+        }
+        frameRoot.dataset.zwLiveblogCommentThemeObserved = '1';
+
+        let animationFrame = 0;
+        const observer = new MutationObserver(() => {
+            if (animationFrame) {
+                return;
+            }
+
+            animationFrame = window.requestAnimationFrame(() => {
+                animationFrame = 0;
+                updateCommentFrameTheme(frame);
+            });
+        });
+        observer.observe(frameRoot, { childList: true, subtree: true });
+    };
+
     const applyCommentFrameTheme = (root) => {
         root.querySelectorAll('iframe').forEach((frame) => {
             if (frame.dataset.zwLiveblogCommentThemeWatched !== '1') {
                 frame.dataset.zwLiveblogCommentThemeWatched = '1';
                 frame.addEventListener('load', () =>
                     window.requestAnimationFrame(() =>
-                        updateCommentFrameTheme(frame),
+                        watchCommentFrame(frame),
                     ),
                 );
             }
 
-            updateCommentFrameTheme(frame);
+            watchCommentFrame(frame);
+        });
+    };
+
+    const observeThemeChanges = (root) => {
+        let animationFrame = 0;
+        const scheduleThemeUpdate = () => {
+            if (animationFrame) {
+                return;
+            }
+
+            animationFrame = window.requestAnimationFrame(() => {
+                animationFrame = 0;
+                applyCommentFrameTheme(root);
+            });
+        };
+
+        const observer = new MutationObserver(scheduleThemeUpdate);
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class'],
         });
     };
 
@@ -192,18 +238,11 @@ body,
             return false;
         }
 
-        if (root.dataset.zwLiveblogInputtingEnhanced === '1') {
-            if (root.dataset.zwLiveblogCommentThemeEnhanced !== '1') {
-                root.dataset.zwLiveblogCommentThemeEnhanced = '1';
-                window.setInterval(() => applyCommentFrameTheme(root), 1000);
-            }
-
-            applyCommentFrameTheme(root);
+        if (root.dataset.zwLiveblogEnhanced === '1') {
             return true;
         }
 
-        root.dataset.zwLiveblogInputtingEnhanced = '1';
-        root.dataset.zwLiveblogCommentThemeEnhanced = '1';
+        root.dataset.zwLiveblogEnhanced = '1';
 
         let animationFrame = 0;
         const scheduleUpdate = () => {
@@ -213,7 +252,6 @@ body,
 
             animationFrame = window.requestAnimationFrame(() => {
                 animationFrame = 0;
-                removeWhiteLabels(root);
                 applyInputtingState(root);
                 applyCommentFrameTheme(root);
             });
@@ -227,7 +265,7 @@ body,
             subtree: true,
         });
 
-        window.setInterval(() => applyCommentFrameTheme(root), 1000);
+        observeThemeChanges(root);
         scheduleUpdate();
         return true;
     };

@@ -62,7 +62,7 @@ final class ZW_Liveblog_Plugin {
 		$this->content     = new ZW_Liveblog_Content();
 		$this->api         = new ZW_Liveblog_Api();
 		$this->shortcode   = new ZW_Liveblog_Shortcode();
-		$this->assets      = new ZW_Liveblog_Assets();
+		$this->assets      = new ZW_Liveblog_Assets( $this->content );
 		$this->card_badges = new ZW_Liveblog_Card_Badges( $this->content );
 		$this->schema      = new ZW_Liveblog_Schema( $this->content, $this->api );
 	}

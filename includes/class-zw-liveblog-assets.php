@@ -14,6 +14,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class ZW_Liveblog_Assets {
 	/**
+	 * Content helper.
+	 *
+	 * @var ZW_Liveblog_Content
+	 */
+	private ZW_Liveblog_Content $content;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param ZW_Liveblog_Content $content Content helper.
+	 */
+	public function __construct( ZW_Liveblog_Content $content ) {
+		$this->content = $content;
+	}
+
+	/**
 	 * Register asset hooks.
 	 */
 	public function register_hooks(): void {
@@ -21,11 +37,11 @@ final class ZW_Liveblog_Assets {
 	}
 
 	/**
-	 * Enqueue assets only on singular content containing a liveblog shortcode.
+	 * Enqueue assets only on singular content containing a valid liveblog shortcode.
 	 */
 	public function enqueue(): void {
 		$post = get_post();
-		if ( ! is_singular() || ! $post instanceof WP_Post || ! has_shortcode( $post->post_content, 'liveblog' ) ) {
+		if ( ! is_singular() || ! $post instanceof WP_Post || ! $this->content->post_has_liveblog( $post ) ) {
 			return;
 		}
 
