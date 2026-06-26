@@ -37,8 +37,18 @@ A lightweight WordPress plugin that embeds 24LiveBlog posts using a simple short
 composer install
 vendor/bin/phpcs           # Code style (PSR-12 + WordPress)
 vendor/bin/phpstan analyse # Static analysis
+
+npm install
+npm run lint               # JS/CSS linting with Biome
+npm run lint:fix           # Auto-fix JS/CSS issues
 ```
+
+## Structure
+
+- `zw-liveblog.php` - plugin bootstrap and metadata
+- `includes/` - PHP components for shortcodes, assets, schema, API calls, and card badges
+- `assets/` - front-end CSS and JavaScript loaded by the plugin
 
 ## License
 
-MIT
+GPL-2.0-or-later

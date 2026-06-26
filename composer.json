@@ -1,6 +1,19 @@
 {
   "name": "oszuidwest/zw-liveblog",
+  "description": "WordPress plugin for embedding 24LiveBlog posts with live badges and LiveBlogPosting schema",
   "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "keywords": ["wordpress", "plugin", "liveblog", "24liveblog", "schema"],
+  "authors": [
+    {
+      "name": "Streekomroep ZuidWest",
+      "homepage": "https://www.zuidwesttv.nl"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/oszuidwest/zw-liveblog/issues",
+    "source": "https://github.com/oszuidwest/zw-liveblog"
+  },
   "require": {
     "php": "^8.3"
   },

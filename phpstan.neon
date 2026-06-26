@@ -3,3 +3,8 @@ parameters:
   phpVersion: 80300
   paths:
     - zw-liveblog.php
+    - includes
+  excludePaths:
+    - vendor
+  parallel:
+    maximumNumberOfProcesses: 1
