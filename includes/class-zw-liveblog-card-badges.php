@@ -21,6 +21,13 @@ final class ZW_Liveblog_Card_Badges {
 	private ZW_Liveblog_Content $content;
 
 	/**
+	 * API client.
+	 *
+	 * @var ZW_Liveblog_Api
+	 */
+	private ZW_Liveblog_Api $api;
+
+	/**
 	 * Collected frontend post IDs.
 	 *
 	 * @var array<int, true>
@@ -28,12 +35,21 @@ final class ZW_Liveblog_Card_Badges {
 	private array $live_post_ids = [];
 
 	/**
+	 * Cached open-liveblog status per post.
+	 *
+	 * @var array<int, bool>
+	 */
+	private array $open_cache = [];
+
+	/**
 	 * Constructor.
 	 *
 	 * @param ZW_Liveblog_Content $content Content helper.
+	 * @param ZW_Liveblog_Api     $api API client.
 	 */
-	public function __construct( ZW_Liveblog_Content $content ) {
+	public function __construct( ZW_Liveblog_Content $content, ZW_Liveblog_Api $api ) {
 		$this->content = $content;
+		$this->api     = $api;
 	}
 
 	/**
@@ -56,12 +72,40 @@ final class ZW_Liveblog_Card_Badges {
 		}
 
 		foreach ( $posts as $post ) {
-			if ( 'publish' === $post->post_status && $this->content->post_has_liveblog( $post ) ) {
+			if ( 'publish' === $post->post_status && $this->has_open_liveblog( $post ) ) {
 				$this->live_post_ids[ $post->ID ] = true;
 			}
 		}
 
 		return $posts;
+	}
+
+	/**
+	 * Whether a post contains at least one liveblog event that is still open.
+	 *
+	 * Mirrors the schema's closed-event detection so a finished liveblog stops
+	 * showing a LIVE badge. Unknown status (API failure) is treated as open so a
+	 * transient outage never hides a genuinely live badge.
+	 *
+	 * @param WP_Post $post Post object.
+	 * @return bool True when the post has an open (non-closed) liveblog event.
+	 */
+	private function has_open_liveblog( WP_Post $post ): bool {
+		if ( array_key_exists( $post->ID, $this->open_cache ) ) {
+			return $this->open_cache[ $post->ID ];
+		}
+
+		$open = false;
+		foreach ( $this->content->extract_liveblog_ids( $post->post_content ) as $id ) {
+			$meta = $this->api->fetch_event_meta( $id );
+			if ( null === $meta || empty( $meta['closed'] ) ) {
+				$open = true;
+				break;
+			}
+		}
+
+		$this->open_cache[ $post->ID ] = $open;
+		return $open;
 	}
 
 	/**
