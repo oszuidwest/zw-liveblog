@@ -21,6 +21,13 @@ final class ZW_Liveblog_Card_Badges {
 	private ZW_Liveblog_Content $content;
 
 	/**
+	 * API client.
+	 *
+	 * @var ZW_Liveblog_Api
+	 */
+	private ZW_Liveblog_Api $api;
+
+	/**
 	 * Collected frontend post IDs.
 	 *
 	 * @var array<int, true>
@@ -28,19 +35,28 @@ final class ZW_Liveblog_Card_Badges {
 	private array $live_post_ids = [];
 
 	/**
+	 * Cached open-liveblog status per post.
+	 *
+	 * @var array<int, bool>
+	 */
+	private array $open_cache = [];
+
+	/**
 	 * Constructor.
 	 *
 	 * @param ZW_Liveblog_Content $content Content helper.
+	 * @param ZW_Liveblog_Api     $api API client.
 	 */
-	public function __construct( ZW_Liveblog_Content $content ) {
+	public function __construct( ZW_Liveblog_Content $content, ZW_Liveblog_Api $api ) {
 		$this->content = $content;
+		$this->api     = $api;
 	}
 
 	/**
 	 * Register hooks.
 	 */
 	public function register_hooks(): void {
-		add_filter( 'the_posts', [ $this, 'collect_liveblog_posts' ] );
+		add_filter( 'the_posts', [ $this, 'collect_liveblog_posts' ], 10, 2 );
 		add_action( 'wp_footer', [ $this, 'print_footer_assets' ], 5 );
 	}
 
@@ -48,20 +64,56 @@ final class ZW_Liveblog_Card_Badges {
 	 * Collect liveblog post IDs from frontend queries.
 	 *
 	 * @param array<int, WP_Post> $posts Query posts.
+	 * @param WP_Query|null       $query Query object.
 	 * @return array<int, WP_Post> Unchanged query posts.
 	 */
-	public function collect_liveblog_posts( array $posts ): array {
+	public function collect_liveblog_posts( array $posts, ?WP_Query $query = null ): array {
 		if ( ! $this->should_run_on_frontend() ) {
 			return $posts;
 		}
 
+		// Secondary queries may use warmed transients, but must not start blocking HTTP.
+		$allow_remote_meta = $query instanceof WP_Query && $query->is_main_query();
+
 		foreach ( $posts as $post ) {
-			if ( 'publish' === $post->post_status && $this->content->post_has_liveblog( $post ) ) {
+			if ( 'publish' === $post->post_status && $this->has_open_liveblog( $post, $allow_remote_meta ) ) {
 				$this->live_post_ids[ $post->ID ] = true;
 			}
 		}
 
 		return $posts;
+	}
+
+	/**
+	 * Whether a post contains at least one liveblog event that is still open.
+	 *
+	 * Mirrors the schema's closed-event detection so a finished liveblog stops
+	 * showing a LIVE badge. Unknown status (API failure) is treated as open so a
+	 * transient outage never hides a genuinely live badge.
+	 *
+	 * @param WP_Post $post              Post object.
+	 * @param bool    $allow_remote_meta Whether uncached event metadata may be fetched remotely.
+	 * @return bool True when the post has an open (non-closed) liveblog event.
+	 */
+	private function has_open_liveblog( WP_Post $post, bool $allow_remote_meta ): bool {
+		if ( array_key_exists( $post->ID, $this->open_cache ) ) {
+			return $this->open_cache[ $post->ID ];
+		}
+
+		$open = false;
+		foreach ( $this->content->extract_liveblog_ids( $post->post_content ) as $id ) {
+			$meta = $allow_remote_meta ? $this->api->fetch_event_meta( $id ) : $this->api->fetch_cached_event_meta( $id );
+			if ( $this->api->is_event_meta_open( $meta ) ) {
+				$open = true;
+				break;
+			}
+		}
+
+		if ( $allow_remote_meta ) {
+			$this->open_cache[ $post->ID ] = $open;
+		}
+
+		return $open;
 	}
 
 	/**

@@ -198,7 +198,7 @@ final class ZW_Liveblog_Schema {
 	 */
 	private function append_coverage_end( array &$schema, string $event_id ): void {
 		$meta = $this->api->fetch_event_meta( $event_id );
-		if ( null === $meta || empty( $meta['closed'] ) || ! isset( $meta['last_updated'] ) ) {
+		if ( $this->api->is_event_meta_open( $meta ) || ! isset( $meta['last_updated'] ) ) {
 			return;
 		}
 
