@@ -55,9 +55,8 @@ final class ZW_Liveblog_Api {
 			return null;
 		}
 
-		$transient_key = 'zw_liveblog_meta_' . md5( $event_id );
-		$cached        = get_transient( $transient_key );
-		if ( is_array( $cached ) ) {
+		$cached = $this->fetch_cached_event_meta( $event_id );
+		if ( null !== $cached ) {
 			return $cached;
 		}
 
@@ -65,10 +64,48 @@ final class ZW_Liveblog_Api {
 		$meta = is_array( $data['data']['event'] ?? null ) ? $data['data']['event'] : null;
 
 		if ( null !== $meta ) {
-			set_transient( $transient_key, $meta, self::CACHE_TTL );
+			set_transient( $this->event_meta_transient_key( $event_id ), $meta, self::CACHE_TTL );
 		}
 
 		return $meta;
+	}
+
+	/**
+	 * Fetch cached metadata without making a remote request.
+	 *
+	 * @param string $event_id The 24LiveBlog event ID.
+	 * @return array<string, mixed>|null
+	 */
+	public function fetch_cached_event_meta( string $event_id ): ?array {
+		if ( ! $this->is_valid_event_id( $event_id ) ) {
+			return null;
+		}
+
+		$cached = get_transient( $this->event_meta_transient_key( $event_id ) );
+		return is_array( $cached ) ? $cached : null;
+	}
+
+	/**
+	 * Whether event metadata should be treated as open.
+	 *
+	 * Missing metadata is considered open so an API outage never hides a
+	 * genuinely live badge.
+	 *
+	 * @param array<string, mixed>|null $meta Event metadata.
+	 * @return bool True when the event is open or its status is unknown.
+	 */
+	public function is_event_meta_open( ?array $meta ): bool {
+		return null === $meta || empty( $meta['closed'] );
+	}
+
+	/**
+	 * Build the metadata transient key for an event.
+	 *
+	 * @param string $event_id The 24LiveBlog event ID.
+	 * @return string Transient key.
+	 */
+	private function event_meta_transient_key( string $event_id ): string {
+		return 'zw_liveblog_meta_' . md5( $event_id );
 	}
 
 	/**
