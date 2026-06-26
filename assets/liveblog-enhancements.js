@@ -8,6 +8,67 @@
     const updatingTextSelector = '.lb24-component-updating1';
     const statusTextSelector = '.lb24-base-topbar-status-text';
     const whiteLabelSelector = '.lb24-liveblog-white-label';
+    const commentThemeStyleId = 'zw-liveblog-comment-dark-theme';
+    const commentThemeCss = `
+html,
+body,
+.frame-content {
+    background: transparent !important;
+    color: #d1d5db !important;
+}
+
+.frame-content [class*="textarea"],
+.frame-content textarea {
+    background: #111827 !important;
+    border-color: #374151 !important;
+    color: #f3f4f6 !important;
+}
+
+.frame-content [class*="textarea"] {
+    border-radius: 4px !important;
+}
+
+.frame-content textarea::placeholder {
+    color: #9ca3af !important;
+    opacity: 1 !important;
+}
+
+.frame-content button,
+.frame-content svg,
+.frame-content svg * {
+    color: #d1d5db !important;
+    fill: #d1d5db !important;
+}
+
+.lb24-livechat-comment,
+.lb24-livechat-comment-box,
+.lb24-livechat-comment-header,
+.lb24-livechat-comment-content,
+.lb24-livechat-comment-footer {
+    color: #d1d5db !important;
+}
+
+.lb24-livechat-comment-username {
+    color: #f3f4f6 !important;
+}
+
+.lb24-livechat-comment-date,
+.lb24-livechat-comment-date * {
+    color: #93c5fd !important;
+}
+
+.lb24-livechat-comment-content-text {
+    color: #d1d5db !important;
+}
+
+.lb24-livechat-comment-footer,
+.lb24-livechat-comment-footer * {
+    color: #9ca3af !important;
+}
+`;
+
+    const isDarkTheme = () =>
+        document.documentElement.classList.contains('dark');
 
     const removeWhiteLabels = (root) => {
         root.querySelectorAll(whiteLabelSelector).forEach((label) => {
@@ -74,12 +135,75 @@
         }
     };
 
+    const getFrameDocument = (frame) => {
+        try {
+            return frame.contentDocument;
+        } catch {
+            return null;
+        }
+    };
+
+    const updateCommentFrameTheme = (frame) => {
+        const frameDocument = getFrameDocument(frame);
+
+        if (!frameDocument?.head) {
+            return;
+        }
+
+        const style = frameDocument.getElementById(commentThemeStyleId);
+
+        if (!isDarkTheme()) {
+            style?.remove();
+            return;
+        }
+
+        if (!frameDocument.querySelector('.frame-content')) {
+            return;
+        }
+
+        if (style) {
+            style.textContent = commentThemeCss;
+            return;
+        }
+
+        const newStyle = frameDocument.createElement('style');
+        newStyle.id = commentThemeStyleId;
+        newStyle.textContent = commentThemeCss;
+        frameDocument.head.appendChild(newStyle);
+    };
+
+    const applyCommentFrameTheme = (root) => {
+        root.querySelectorAll('iframe').forEach((frame) => {
+            if (frame.dataset.zwLiveblogCommentThemeWatched !== '1') {
+                frame.dataset.zwLiveblogCommentThemeWatched = '1';
+                frame.addEventListener('load', () =>
+                    window.requestAnimationFrame(() =>
+                        updateCommentFrameTheme(frame),
+                    ),
+                );
+            }
+
+            updateCommentFrameTheme(frame);
+        });
+    };
+
     const enhanceRoot = (root) => {
-        if (!root || root.dataset.zwLiveblogInputtingEnhanced === '1') {
+        if (!root) {
             return false;
         }
 
+        if (root.dataset.zwLiveblogInputtingEnhanced === '1') {
+            if (root.dataset.zwLiveblogCommentThemeEnhanced !== '1') {
+                root.dataset.zwLiveblogCommentThemeEnhanced = '1';
+                window.setInterval(() => applyCommentFrameTheme(root), 1000);
+            }
+
+            applyCommentFrameTheme(root);
+            return true;
+        }
+
         root.dataset.zwLiveblogInputtingEnhanced = '1';
+        root.dataset.zwLiveblogCommentThemeEnhanced = '1';
 
         let animationFrame = 0;
         const scheduleUpdate = () => {
@@ -91,6 +215,7 @@
                 animationFrame = 0;
                 removeWhiteLabels(root);
                 applyInputtingState(root);
+                applyCommentFrameTheme(root);
             });
         };
 
@@ -102,6 +227,7 @@
             subtree: true,
         });
 
+        window.setInterval(() => applyCommentFrameTheme(root), 1000);
         scheduleUpdate();
         return true;
     };
