@@ -5,7 +5,7 @@ A lightweight WordPress plugin that embeds 24LiveBlog posts using a simple short
 ## Requirements
 
 - WordPress 7.0 or higher
-- PHP 8.3 or higher
+- PHP 8.4 or higher
 
 ## Installation
 
